@@ -1,0 +1,10 @@
+<meta>
+ 
+<info author="Konders" type="misc" name="CRUD"  version="1.0" />
+  <script src="class/Database.lua" type="server" />
+  <script src="class/ContextMenuWindow.lua" type="client" />
+  <script src="class/EditUserWindow.lua" type="client" />
+  <script src="class/UsersWindow.lua" type="client" />
+  <script src="client.lua" type="client" />
+    <file src="sf.ttf"/>
+</meta>
