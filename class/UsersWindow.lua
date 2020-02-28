@@ -70,23 +70,16 @@ function UsersWindow:new(list,columns)
                 obj.contextMenuWindow = ContextMenuWindow:new(relativeX,relativeY,obj)
             end
         end)
-        --temporary disabled
-        -- addEventHandler( "onDgsMouseDoubleClick", obj.gridList, 
-        --     function(button, state, x, y)
-        --         if button == 'left' and state == 'up' and source == obj.gridList then
-        --             local Selected = dgsGridListGetSelectedItem(obj.gridList)
-        --             if Selected ~= -1 then 
-        --                 local output= dgsGridListGetItemText(obj.gridList,Selected,column)
-        --                 obj.invokeEditUserWindow(Selected,obj)
-        --                 -- outputChatBox(""..output.."",255,0,0)
-        --             end
-        --             -- local Selected = dgsGridListGetSelectedItem(obj.gridList)
-        --             -- if Selected ~= -1 then 
-        --             --     obj.invokeEditUserWindow(Selected,obj)
-        --             -- end
-        --         end
-        --     end
-        -- )
+        addEventHandler( "onDgsMouseDoubleClick", obj.gridList, 
+            function(button, state, x, y)
+                if button == 'left' and state == 'down' and source == obj.gridList then
+                    local Selected = dgsGridListGetSelectedItem(self.gridList)
+                    if Selected ~= -1 then 
+                        self:invokeEditUserWindow(Selected,obj)
+                    end
+                end
+            end
+        )
         addEventHandler("onDgsDestroy",getRootElement(),function() 
             if source == obj.window then 
                 if obj.additionalUserWindow then obj.additionalUserWindow:destroy() end
