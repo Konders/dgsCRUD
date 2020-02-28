@@ -21,24 +21,6 @@ function UsersWindow:new(list,columns)
             table.insert(obj.columns,column)
         end
     end
-    -- function obj:getColumnAVGWidth(columnID,relative)
-        --     if not columns[columnID] then return end
-        
-    --     local totalWidth = 0
-    --     --Счетчик пустых строк, поможет правильно настроить работу среднего арифметического ширины столбца
-    --     local emptyStringsCounter = 0
-    --     for k,v in pairs(list) do 
-    --         local rowText = v[columnID] or ""
-    --         if string.len(rowText) == 0 then emptyStringsCounter = emptyStringsCounter + 1 end
-    --         totalWidth = totalWidth + dxGetTextWidth(rowText,1,dgsGetSystemFont())
-    --     end
-    --     if relative then 
-    --         -- local x,_ = dgsGetSize(obj.window)
-    --         local screenWidth,screenHeight = guiGetScreenSize()
-    --         return (totalWidth/(#list - emptyStringsCounter))/screenWidth
-    --     end
-    --     return totalWidth/(#list - emptyStringsCounter)
-    -- end
     
     --fill our gridlist with users information
     function obj:fillGridList(data)
@@ -52,7 +34,7 @@ function UsersWindow:new(list,columns)
     end
     function obj:invokeAddUserWindow()
         if obj.additionalUserWindow then obj.additionalUserWindow:destroy() end
-        obj.additionalUserWindow = AddUserWindow:new()
+        obj.additionalUserWindow = AddUserWindow:new(columns)
 
     end
     function obj:invokeEditUserWindow(selectedID)
@@ -103,3 +85,22 @@ function UsersWindow:new(list,columns)
     self.__index = self
     return obj
 end
+
+-- function obj:getColumnAVGWidth(columnID,relative)
+        --     if not columns[columnID] then return end
+        
+    --     local totalWidth = 0
+    --     --Счетчик пустых строк, поможет правильно настроить работу среднего арифметического ширины столбца
+    --     local emptyStringsCounter = 0
+    --     for k,v in pairs(list) do 
+    --         local rowText = v[columnID] or ""
+    --         if string.len(rowText) == 0 then emptyStringsCounter = emptyStringsCounter + 1 end
+    --         totalWidth = totalWidth + dxGetTextWidth(rowText,1,dgsGetSystemFont())
+    --     end
+    --     if relative then 
+    --         -- local x,_ = dgsGetSize(obj.window)
+    --         local screenWidth,screenHeight = guiGetScreenSize()
+    --         return (totalWidth/(#list - emptyStringsCounter))/screenWidth
+    --     end
+    --     return totalWidth/(#list - emptyStringsCounter)
+    -- end
