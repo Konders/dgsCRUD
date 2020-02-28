@@ -35,5 +35,17 @@ for i=0,math.random(1,100) do
         table.insert(listOfUsers[i], randomString(math.random(0,50)))
     end
 end
+local window 
+addEvent("retrieveUsers",true)
+addEventHandler("retrieveUsers",localPlayer,function(list) 
+    listOfUsers = list
+    if window and dgsGetType(window.window) == "dgs-dxwindow" then window:updateGridList(listOfUsers) 
+    else
+        window = UsersWindow:new(listOfUsers,columns)
+    end
 
-local window = UsersWindow:new(listOfUsers,columns)
+end)
+addCommandHandler("crud",function(cmd,player) 
+    triggerServerEvent("getUsers",root,localPlayer)
+end)
+triggerServerEvent("getUsers",root,localPlayer)

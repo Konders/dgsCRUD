@@ -1,6 +1,6 @@
 local dbname = "GjbL9VBOuX"
 local username = "GjbL9VBOuX"
-local password = "****"
+local password = "*"
 local columnNamesSQLQuery = [[
     SELECT `COLUMN_NAME` 
 FROM `INFORMATION_SCHEMA`.`COLUMNS` 
@@ -19,70 +19,68 @@ local getUsersSQLQuery = [[
 
 Database = {}
 function Database:new()
-    local self = {}
-    self.connection = dbConnect( "mysql", "dbname=GjbL9VBOuX;host=remotemysql.com;charset=utf8", username, password)
-    if (not self.connection) then
+    local obj = {}
+    obj.connection = dbConnect( "mysql", "dbname=GjbL9VBOuX;host=remotemysql.com;charset=utf8", username, password)
+    if (not obj.connection) then
         outputDebugString("Error: Failed to establish connection to the MySQL database server")
     else
         outputDebugString("Success: Connected to the MySQL database server")
     end
 
-    function self.query(callback,query) 
-        dbQuery(callback,self.connection,query)
+    function obj:query(callback,query,...) 
+        dbQuery(callback,{...},obj.connection,query)
     end
-
-    function self.columnNamesCallback(queryHandler) 
+    function obj:getUsers(callback,player,columns)
+        obj:query(callback,getUsersSQLQuery,player,columns) 
+    end
+    
+    function obj:getColumnNames(callback,player)
+        obj:query(callback,columnNamesSQLQuery,player) 
+    end
+    
+    obj.columnNamesCallback = function(queryHandler,player) 
         local result = dbPoll( queryHandler, 0 )
-
-        -- {
-        --     [1]={["COLUMN_NAME"] = "id"},
-        --     [2]={["COLUMN_NAME"] = "FirstName"},
-        --     [3]={["COLUMN_NAME"] = "LastName"},
-        --     [4]={["COLUMN_NAME"] = "Location"},
-        -- }
+            --result = {
+            --     [1]={["COLUMN_NAME"] = "id"},
+            --     [2]={["COLUMN_NAME"] = "FirstName"},
+            --     [3]={["COLUMN_NAME"] = "LastName"},
+            --     [4]={["COLUMN_NAME"] = "Location"},
+            -- }
         for k,v in pairs(result) do 
             result[k] = result[k].COLUMN_NAME
-
         end
+        obj:getUsers(obj.usersCallback,player,result)
     end
-    -- function self.usersCallback(queryHandler,executeFunction) 
-    --     local result = dbPoll( queryHandler, 0 )
-    --     -- {
-    --     --     [1]={
-    --     --         ["FirstName"] = "Illya",
-    --     --         ["Location"] = "Kiev",
-    --     --         ["LastName"] = "Shchukin",
-    --     --         ["id"] = "1",
-    --     --     },
-    --     -- }
-    --     for k,v in pairs(result) do 
-    --         outputDebugString(k..": "..tostring(v))
-    --         -- result[k] = result[k].COLUMN_NAME
-
-    --     end
-    --     if executeFunction then executeFunction() end
-    -- end
-    function self.getUsers(callback)
-        self:query(callback,getUsersSQLQuery) 
+    obj.usersCallback = function(queryHandler,player,columns) 
+        local result = dbPoll( queryHandler, 0 )
+            --result = {
+            --     [1]={
+            --         ["FirstName"] = "Illya",
+            --         ["Location"] = "Kiev",
+            --         ["LastName"] = "Shchukin",
+            --         ["id"] = "1",
+            --     },
+            -- }
+        local formatted = {}
+        for i,userData in pairs(result) do 
+            formatted[i] = {}
+            for j,columnName in pairs(columns) do 
+                formatted[i][j] = userData[columnName]
+            end
+        end
+        triggerClientEvent(player,"retrieveUsers",player,formatted,columns)
     end
-
-    function self:getColumnNames(callback)
-        self:query(callback,columnNamesSQLQuery) 
-    end
-    setmetatable(self,{})
+    addEvent("getUsers",true)
+    addEventHandler("getUsers",root,function() 
+        obj:getColumnNames(obj.columnNamesCallback,client)
+    end)
+    setmetatable(obj,self)
     self.__index = self
-    return self
+    return obj
 end
 function execute(...)
     local queryHandle = dbQuery(DBConnection, ...)
     local result, numRows = dbPoll(queryHandle, -1)
     return numRows
 end
-
-local db= Database:new()
--- db:getColumnNames()
-function us(queryHandler) 
-    local result = dbPoll( queryHandler, 0 )
-    outputDebugString("GOTTA")
-end
-db:getUsers(us)
+local DB = Database:new()
