@@ -2,7 +2,7 @@
 UsersWindow = {}
 function UsersWindow:new(list,columns)
     local obj = {}
-    
+    obj.columnNames = columns
     obj.columns = {}
     function obj:initDgsElements()
         obj.window = dgsCreateWindow(0.325,0.35,0.35,0.3,"CRUD",true,tocolor(255,255,255),20,nil,tocolor(60,72,84),nil,tocolor(60,72,84),5,false)
@@ -32,16 +32,16 @@ function UsersWindow:new(list,columns)
         dgsGridListClear(obj.gridList)
         obj:fillGridList(data)
     end
-    function obj:invokeAddUserWindow()
+    function obj:invokeUserManagerWindow(editingID)
         if obj.additionalUserWindow then obj.additionalUserWindow:destroy() end
-        obj.additionalUserWindow = AddUserWindow:new(columns)
+        obj.additionalUserWindow = UserManagerWindow:new(obj.columnNames,obj,editingID or false)
 
     end
-    function obj:invokeEditUserWindow(selectedID)
-        if obj.additionalUserWindow then obj.additionalUserWindow:destroy() end
-        obj.additionalUserWindow = EditUserWindow:new(selectedID,obj)
+    -- function obj:invokeEditUserWindow(selectedID)
+    --     if obj.additionalUserWindow then obj.additionalUserWindow:destroy() end
+    --     obj.additionalUserWindow = EditUserWindow:new(selectedID,obj)
 
-    end
+    -- end
     function obj:initEventHandlers()
         addEventHandler ( "onDgsMouseClickDown",obj.gridList,function(button, absoluteX, absoluteY) 
             if button == "right" and source == obj.gridList then
@@ -56,8 +56,8 @@ function UsersWindow:new(list,columns)
             function(button, state, x, y)
                 if button == 'left' and state == 'down' and source == obj.gridList then
                     local Selected = dgsGridListGetSelectedItem(self.gridList)
-                    if Selected ~= -1 then 
-                        self:invokeEditUserWindow(Selected,obj)
+                    if Selected ~= -1 and type(Selected) == "number" then 
+                        obj:invokeUserManagerWindow(Selected)
                     end
                 end
             end

@@ -38,11 +38,11 @@ function ContextMenuWindow:new(x,y,parent)
         local rowID = dgsGridListGetItemText(parent.gridList,Selected,1)
         if btnID == 1 then
             
-            parent:invokeAddUserWindow()
+            parent:invokeUserManagerWindow()
             dgsCloseWindow(obj.window)
         elseif btnID == 2 then
             if Selected ~= -1 then 
-                parent:invokeEditUserWindow(Selected,parent)
+                parent:invokeUserManagerWindow(Selected)
                 dgsCloseWindow(obj.window)
             end
         elseif btnID == 3 then

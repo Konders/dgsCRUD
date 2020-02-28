@@ -1,8 +1,8 @@
-AddUserWindow = {}
-function AddUserWindow:new(columns)
+UserManagerWindow = {}
+function UserManagerWindow:new(columns,parent,editingID)
     local obj = {}
     function obj:initDgsElements()
-        obj.window = dgsCreateWindow(0.525,0.35,0.15,0.3,"Add user",true,tocolor(255,255,255),20,nil,tocolor(60,72,84),nil,tocolor(60,72,84),5,false)
+        obj.window = dgsCreateWindow(0.525,0.35,0.15,0.3,"User Manager",true,tocolor(255,255,255),20,nil,tocolor(60,72,84),nil,tocolor(60,72,84),5,false)
         dgsMoveToBack(obj.window)
         obj.closeButton = dgsWindowGetCloseButton(obj.window)
 
@@ -21,9 +21,16 @@ function AddUserWindow:new(columns)
             dgsEditSetPlaceHolder(obj.editBoxes[columnID],columnName)
             dgsSetProperty(obj.editBoxes[columnID],"placeHolderFont",dxCreateFont("sf.ttf",9,false,"antialiased"))
             dgsSetProperty(obj.editBoxes[columnID],"font",dxCreateFont("sf.ttf",9,false,"antialiased"))
+            if editingID then
+                local columnText = dgsGridListGetItemText(parent.gridList,editingID,columnID)
+                if columnText then
+                    dgsSetText(obj.editBoxes[columnID],columnText)
+                end
+            end
             end
         end
         obj.addButton = dgsCreateButton(0.5 - (obj.editBoxWidth/2),(#obj.editBoxes + 1) * 0.11, obj.editBoxWidth,0.1,"Insert", true,obj.scrollPane)
+        if editingID then dgsSetText(obj.addButton,"Save") end
     end
     function obj:initEventHandlers()
         addEventHandler("onDgsMouseClickUp",obj.addButton,function(button, absoluteX, absoluteY) 
@@ -32,7 +39,13 @@ function AddUserWindow:new(columns)
             for i,editBox in pairs(obj.editBoxes) do 
                 table.insert(dataList,dgsGetText(editBox))
             end
-            triggerServerEvent("onClientInsertUser",root,localPlayer,unpack(dataList))
+            
+            if editingID then 
+                local databaseRowID = dgsGridListGetItemText(parent.gridList, editingID,1)
+                triggerServerEvent("onClientUpdateUser",root,localPlayer,databaseRowID,unpack(dataList))
+            else
+                triggerServerEvent("onClientInsertUser",root,localPlayer,unpack(dataList))
+            end
         end)
     end
     function obj:startAnimations()
