@@ -17,7 +17,7 @@ function UsersWindow:new(list,columns)
         for k,v in pairs(columns) do
             local column = dgsGridListAddColumn(obj.gridList,v,0.3)
             --last 2 arguments works only with up-to-date version of dgs
-            dgsGridListAutoSizeColumn(obj.gridList,k,0.5,true)
+            dgsGridListAutoSizeColumn(obj.gridList,k,1,true)
             table.insert(obj.columns,column)
         end
     end
