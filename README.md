@@ -18,3 +18,6 @@ Dependencies: [dgs](https://github.com/thisdp/dgs)(you must use latest version, 
  - Use cmd /crud to open menu 
  - Right mouse button on grid list, for opening a context menu     
  - Doubleclick on any user, would open edit panel
+ 
+  **Demonstration**
+[video](https://streamable.com/2ckod)
