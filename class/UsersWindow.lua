@@ -43,20 +43,22 @@ function UsersWindow:new(list,columns)
     --fill our gridlist with users information
     function obj:fillGridList(data)
         for k,v in pairs(data) do
-            -- outputDebugString(v)
-            outputDebugString(v[4])
-            dgsGridListAddRow(obj.gridList,1,unpack(v))--unpack(v))
-            -- dgsGridListAddRow(obj.gridList,0,tostring(k),v["firstName"],v["secondName"],v["location"])
+            dgsGridListAddRow(obj.gridList,1,unpack(v))
         end
     end
     function obj:updateGridList(data)
         dgsGridListClear(obj.gridList)
         obj:fillGridList(data)
     end
-    function obj:invokeAddUserWindow(selectedID)
-        if obj.addUserWindow then obj.addUserWindow:destroy() end
-        obj.addUserWindow = EditUserWindow:new()
-        -- local output= dgsGridListGetItemText(obj.gridList,selectedID,1)
+    function obj:invokeAddUserWindow()
+        if obj.additionalUserWindow then obj.additionalUserWindow:destroy() end
+        obj.additionalUserWindow = AddUserWindow:new()
+
+    end
+    function obj:invokeEditUserWindow(selectedID)
+        if obj.additionalUserWindow then obj.additionalUserWindow:destroy() end
+        obj.additionalUserWindow = EditUserWindow:new(selectedID,obj)
+
     end
     function obj:initEventHandlers()
         addEventHandler ( "onDgsMouseClickDown",obj.gridList,function(button, absoluteX, absoluteY) 
@@ -68,20 +70,28 @@ function UsersWindow:new(list,columns)
                 obj.contextMenuWindow = ContextMenuWindow:new(relativeX,relativeY,obj)
             end
         end)
-        addEventHandler( "onDgsMouseDoubleClick", obj.gridList, 
-            function(button, state, x, y)
-                if button == 'left' and state == 'up' and source == obj.gridList then
-                    local Selected = dgsGridListGetSelectedItem(obj.gridList)
-                    if Selected ~= -1 then 
-                        obj.invokeAddUserWindow(Selected)
-                    end
-                end
-            end
-        )
+        --temporary disabled
+        -- addEventHandler( "onDgsMouseDoubleClick", obj.gridList, 
+        --     function(button, state, x, y)
+        --         if button == 'left' and state == 'up' and source == obj.gridList then
+        --             local Selected = dgsGridListGetSelectedItem(obj.gridList)
+        --             if Selected ~= -1 then 
+        --                 local output= dgsGridListGetItemText(obj.gridList,Selected,column)
+        --                 obj.invokeEditUserWindow(Selected,obj)
+        --                 -- outputChatBox(""..output.."",255,0,0)
+        --             end
+        --             -- local Selected = dgsGridListGetSelectedItem(obj.gridList)
+        --             -- if Selected ~= -1 then 
+        --             --     obj.invokeEditUserWindow(Selected,obj)
+        --             -- end
+        --         end
+        --     end
+        -- )
         addEventHandler("onDgsDestroy",getRootElement(),function() 
             if source == obj.window then 
-                if obj.addUserWindow then obj.addUserWindow:destroy() end
+                if obj.additionalUserWindow then obj.additionalUserWindow:destroy() end
                 if obj.contextMenuWindow then obj.contextMenuWindow:destroy() end
+                if obj.messageBox then obj.messageBox:destroy() end
                 showCursor(false)
             end
         end)

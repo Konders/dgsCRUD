@@ -1,18 +1,17 @@
 local dbname = "GjbL9VBOuX"
 local username = "GjbL9VBOuX"
-local password = "*"
+local password = "Kj6Pytyuze"
 local columnNamesSQLQuery = [[
     SELECT `COLUMN_NAME` 
-FROM `INFORMATION_SCHEMA`.`COLUMNS` 
-WHERE `TABLE_SCHEMA`='GjbL9VBOuX' 
+    FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+    WHERE `TABLE_SCHEMA`=']]..dbname..[[' 
     AND `TABLE_NAME`='users';
 ]]
 local tableSQLQuery = [[
-    CREATE TABLE IF NOT EXISTS `GjbL9VBOuX`.`users` ( `id` INT NOT NULL AUTO_INCREMENT , `FirstName` TEXT NOT NULL , `LastName` TEXT NOT NULL , `Location` TEXT NOT NULL , PRIMARY KEY (`id`))
+    CREATE TABLE IF NOT EXISTS `]]..dbname..[[`.`users` ( `id` INT NOT NULL AUTO_INCREMENT , `FirstName` TEXT NOT NULL , `LastName` TEXT NOT NULL , `Location` TEXT NOT NULL , PRIMARY KEY (`id`))
     ]]
-local insertSQLQuery = [[
-    INSERT INTO `users` (`id`, `FirstName`, `LastName`, `Location`) VALUES (NULL, 'Illya', 'Shchukin', 'Kiev');
-]]
+local insertSQLQuery = "INSERT INTO `users` (`id`, `FirstName`, `LastName`, `Location`) VALUES (NULL, ?, ?, ?)"
+
 local getUsersSQLQuery = [[
     SELECT * FROM `users`
 ]]
@@ -20,15 +19,23 @@ local getUsersSQLQuery = [[
 Database = {}
 function Database:new()
     local obj = {}
-    obj.connection = dbConnect( "mysql", "dbname=GjbL9VBOuX;host=remotemysql.com;charset=utf8", username, password)
+    obj.connection = dbConnect( "mysql", "dbname="..dbname..";host=remotemysql.com;charset=utf8", username, password)
     if (not obj.connection) then
         outputDebugString("Error: Failed to establish connection to the MySQL database server")
     else
         outputDebugString("Success: Connected to the MySQL database server")
     end
 
+    dbExec(obj.connection,tableSQLQuery)
     function obj:query(callback,query,...) 
         dbQuery(callback,{...},obj.connection,query)
+    end
+    function obj:insert(query,...)
+        local readyQuery = dbPrepareString(obj.connection,query,...)
+        dbExec(obj.connection,readyQuery)
+    end
+    function obj:insertUser(firstName,lastName,location)
+        obj:insert(insertSQLQuery,firstName,lastName,location)
     end
     function obj:getUsers(callback,player,columns)
         obj:query(callback,getUsersSQLQuery,player,columns) 
@@ -36,6 +43,14 @@ function Database:new()
     
     function obj:getColumnNames(callback,player)
         obj:query(callback,columnNamesSQLQuery,player) 
+    end
+    function obj:updateUser(id,firstName,lastName,location)
+        local query = dbPrepareString(obj.connection,"UPDATE `users` SET `FirstName`=?,`LastName`=?,`Location`=? WHERE `id` = ?", firstName, lastName, location,id)
+        dbExec( obj.connection, query )
+    end
+    function obj:deleteUser(id)
+        local query = dbPrepareString(obj.connection,"DELETE FROM `users` WHERE `id` = ?", id)
+        dbExec( obj.connection, query )
     end
     
     obj.columnNamesCallback = function(queryHandler,player) 
@@ -61,6 +76,7 @@ function Database:new()
             --         ["id"] = "1",
             --     },
             -- }
+        if not columns then return end
         local formatted = {}
         for i,userData in pairs(result) do 
             formatted[i] = {}
@@ -70,8 +86,23 @@ function Database:new()
         end
         triggerClientEvent(player,"retrieveUsers",player,formatted,columns)
     end
-    addEvent("getUsers",true)
-    addEventHandler("getUsers",root,function() 
+    addEvent("onClientGetUsers",true)
+    addEvent("onClientInsertUser",true)
+    addEvent("onClientUpdateUser",true)
+    addEvent("onClientDeleteUser",true)
+    addEventHandler("onClientGetUsers",root,function() 
+        obj:getColumnNames(obj.columnNamesCallback,client)
+    end)
+    addEventHandler("onClientInsertUser",root,function(_,firstName,lastName,location)
+        obj:insertUser(firstName,lastName,location)
+        obj:getColumnNames(obj.columnNamesCallback,client)
+    end)
+    addEventHandler("onClientUpdateUser",root,function(_,id,firstName,lastName,location) 
+        obj:updateUser(id,firstName,lastName,location)
+        obj:getColumnNames(obj.columnNamesCallback,client)
+    end)
+    addEventHandler("onClientDeleteUser",root,function(_,id) 
+        obj:deleteUser(id)
         obj:getColumnNames(obj.columnNamesCallback,client)
     end)
     setmetatable(obj,self)
